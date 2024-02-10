@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "272606286201",
+    "project_id": "obsmngmnt",
+    "storage_bucket": "obsmngmnt.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272606286201:android:9449785670b510f07e5fa8",
+        "android_client_info": {
+          "package_name": "com.example.desktopadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8qH-dKquBfkeg_sgGzRTEX3vjvwVQOdw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:272606286201:android:973ea78756ba83287e5fa8",
+        "android_client_info": {
+          "package_name": "com.example.obsmngnt"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8qH-dKquBfkeg_sgGzRTEX3vjvwVQOdw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
