@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "obsmngmnt"
-  }
+    "default": "obsmngmnt",
+    "obsadmin": "obsmngmnt"
+  },
+  "targets": {},
+  "etags": {}
 }

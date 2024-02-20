@@ -1,30 +1,22 @@
-import 'package:desktopadmin/constans.dart';
-import 'package:desktopadmin/firebase_options.dart';
-import 'package:desktopadmin/loginscreen.dart';
-import 'package:desktopadmin/menucontroller.dart';
-import 'package:desktopadmin/mymultiprovider.dart';
+import 'dart:js' as js;
+import 'package:desktopadmin/Services/constans.dart';
+import 'package:desktopadmin/Services/firebase_options.dart';
+import 'package:desktopadmin/Login/loginscreen.dart';
+import 'package:desktopadmin/Services/menucontroller.dart';
+import 'package:desktopadmin/Services/mymultiprovider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
+    js.context.callMethod('allowPermission');
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-  const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('app_icon');
-  final InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-  );
-  await flutterLocalNotificationsPlugin.initialize(
-    initializationSettings,
-  );
+
   runApp(
     MultiProvider(
       providers: [
@@ -32,16 +24,16 @@ void main() async {
           create: (context) => MenuAppController(),
         ),
       ],
-      child: MyApp(flutterLocalNotificationsPlugin: flutterLocalNotificationsPlugin),
+      child: MyApp(),
     ),
   );
 }
 
 // ignore: must_be_immutable
 class MyApp extends StatelessWidget {
-  final flutterLocalNotificationsPlugin;
-
-  MyApp({Key? key, required this.flutterLocalNotificationsPlugin}) : super(key: key);
+  MyApp({
+    Key? key,
+  }) : super(key: key);
 
   String? _currentUserId;
   String? _currentToken;
@@ -62,7 +54,8 @@ class MyApp extends StatelessWidget {
           if (snapshot.hasData) {
             _currentUserId = FirebaseAuth.instance.currentUser!.uid;
             _getCurrentToken();
-            return const MyMultiProvider();
+            
+            return const MyMultiProvider(title: 'Tesdrive',);
           }
           return const LoginScreen();
         },
@@ -78,8 +71,10 @@ class MyApp extends StatelessWidget {
 }
 
 void saveTokenToDatabase(String? userId, String token) {
-  final databaseReference = FirebaseDatabase.instance.reference();
+  final databaseReference = FirebaseDatabase.instance.ref();
   databaseReference.child('admintoken').child('token').update({
     'fcmToken': token,
   });
 }
+
+

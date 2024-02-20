@@ -1,10 +1,12 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:desktopadmin/responsive.dart';
+import 'package:desktopadmin/Services/firebase_services.dart';
+import 'package:desktopadmin/Services/responsive.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class NewTransactionsCard extends StatelessWidget {
+class NewTransactionsCard extends StatefulWidget {
   final String idpelanggan;
   final String nicknamepelanggan;
   final String agen;
@@ -35,11 +37,33 @@ class NewTransactionsCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<NewTransactionsCard> createState() => _NewTransactionsCardState();
+}
+
+class _NewTransactionsCardState extends State<NewTransactionsCard> {
+  late String username; 
+  @override
+  void initState() {
+    super.initState();
+    _getUsername();
+  }
+
+  Future<void> _getUsername() async {
+    FirebaseServiceAuth firebaseServiceAuth = FirebaseServiceAuth();
+    String? email = FirebaseAuth.instance.currentUser?.email;
+
+    if (email != null) {
+      String? retrievedUsername = await firebaseServiceAuth.getUsernameByEmail(email);
+      setState(() {
+        username = retrievedUsername ?? 'user';
+      });
+    }
+  }
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Container(
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.all(5),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(8.0),
@@ -48,48 +72,49 @@ class NewTransactionsCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             if (!Responsive.isMobile(context))
-              Container(width: 65, child: Text(jenistransaksi)),
+              Container(width: 65, child: Text(widget.jenistransaksi)),
             if (!Responsive.isMobile(context))
               SizedBox(
                 width: 90,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(tanggalpembelian), Text(jampembelian)],
+                  children: [Text(widget.tanggalpembelian), Text(widget.jampembelian)],
                 ),
               ),
             if (!Responsive.isMobile(context))
               SizedBox(
                 width: 100,
                 child: Column(
-                  children: [Text(agen), Text(branch)],
+                  children: [Text(widget.agen), Text(widget.branch)],
                 ),
               ),
             SizedBox(
                 width: 100,
                 child: Text(
-                  produk,
+                  widget.produk,
                   textAlign: TextAlign.center,
                 )),
            
               SizedBox(
-                width: 100,
+                width: 120,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(nicknamepelanggan),
+                    Text(widget.nicknamepelanggan),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.max,
                         children: [
-                          Center(child: Text(idpelanggan)),
+                          Center(child: Text(widget.idpelanggan)),
                           IconButton(
                             onPressed: () {
-                              FlutterClipboard.copy(idpelanggan).then((value) {
+                              FlutterClipboard.copy(widget.idpelanggan).then((value) {
                                 _showTopLeftMessage(
                                     context,
-                                    'ID disalin $idpelanggan',
+                                    'ID disalin ${widget.idpelanggan}',
                                     Icon(
                                       Icons.check_circle,
                                       color: Colors.blue,
@@ -110,38 +135,38 @@ class NewTransactionsCard extends StatelessWidget {
               width: 80,
               child: Column(
                 children: [
-                  Text(variasi),
+                  Text(widget.variasi),
                   const SizedBox(
                     width: 5.0,
                   ),
-                  Text('x $jumlahbeli'),
+                  Text('x ${widget.jumlahbeli}'),
                 ],
               ),
             ),
             if (!Responsive.isMobile(context))
               SizedBox(
-                  width: 120, child: Text('Rp. ${formatCurrency(totalharga)}')),
+                  width: 120, child: Text('Rp. ${formatCurrency(widget.totalharga)}')),
             Container(
               width: Responsive.isMobile(context) ? 95 : 130,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _getStatusColor(status),
+                  backgroundColor: _getStatusColor(widget.status),
                   side: BorderSide(color: Colors.white),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
                 onPressed: () {
-                  if (status == 'Belum diproses') {
-                    updateTransactionData(context, jampembelian, idpelanggan);
-                  } else if (status == 'Diproses') {
-                    _handleConfirmation(context, jampembelian, idpelanggan);
+                  if (widget.status == 'Belum diproses') {
+                    updateTransactionData(context, widget.jampembelian, widget.idpelanggan);
+                  } else if (widget.status == 'Diproses') {
+                    _handleConfirmation(context, widget.jampembelian, widget.idpelanggan);
                   }
                 },
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: Responsive.isMobile(context)? 0 : 15),
                   child: Text(
-                    status == 'Belum diproses' ? 'Proses' : 'Selesaikan', style: TextStyle(fontFamily: 'Kanit' ,fontSize: Responsive.isMobile(context)? 9 :16),
+                    widget.status == 'Belum diproses' ? 'Proses' : 'Selesaikan', style: TextStyle(fontFamily: 'Kanit' ,fontSize: Responsive.isMobile(context)? 9 :16),
                   ),
                 ),
               ),
@@ -186,6 +211,7 @@ class NewTransactionsCard extends StatelessWidget {
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         await transactions.doc(doc.id).update({
           'status': 'Diproses',
+          'admin' : username,
         });
 
         _showTopLeftMessage(
@@ -220,7 +246,7 @@ class NewTransactionsCard extends StatelessWidget {
 
       for (QueryDocumentSnapshot doc in querySnapshot.docs) {
         await transactions.doc(doc.id).update({
-          'status': 'Selesai!',
+          'status': 'Selesai!', 'admin' : username
         });
 
         _showTopLeftMessage(
@@ -232,7 +258,7 @@ class NewTransactionsCard extends StatelessWidget {
             ));
       }
     } catch (error) {
-      print('Terjadi kesalahan saat mengupdate data: $error');
+
     }
   }
 

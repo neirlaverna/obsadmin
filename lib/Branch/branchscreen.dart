@@ -1,9 +1,9 @@
-import 'package:desktopadmin/constans.dart';
-import 'package:desktopadmin/header.dart';
+import 'package:desktopadmin/Services/constans.dart';
+import 'package:desktopadmin/Main/header.dart';
 import 'package:flutter/material.dart';
 
-class TransactionScreen extends StatelessWidget {
-  const TransactionScreen({super.key});
+class BranchScreen extends StatelessWidget {
+  const BranchScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class TransactionScreen extends StatelessWidget {
         padding: EdgeInsets.all(defaultpadding),
         child: Column(
           children: [
-            Header(),
+            Header(title: 'Daftar cabamg',),
           ],
         ),
       ),

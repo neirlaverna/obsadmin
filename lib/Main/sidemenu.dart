@@ -1,8 +1,7 @@
-// sidemenu.dart
-
-import 'package:desktopadmin/loginscreen.dart';
+import 'package:desktopadmin/Login/loginscreen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 
 class SideMenu extends StatelessWidget {
   const SideMenu({
@@ -29,26 +28,27 @@ class SideMenu extends StatelessWidget {
               },
             ),
             DrawerListTile(
-              title: 'Transaksi',
-              icon: Icons.monetization_on,
+              title: 'Daftar Barang',
+              icon: Icons.shopping_cart,
               press: () {
-                onPageSelected('transaction');
+                onPageSelected('cart');
               },
             ),
             DrawerListTile(
-              title: 'Registrasi Karyawan',
-              icon: Icons.dashboard,
+              title: 'Karyawan',
+              icon: Icons.family_restroom,
               press: () {
                 onPageSelected('register');
               },
             ),
             DrawerListTile(
-              title: 'Riwayat',
-              icon: Icons.history_toggle_off,
+              title: 'Transaction History',
+              icon: Icons.currency_exchange,
               press: () {
-                onPageSelected('history');
+                onPageSelected('History');
               },
             ),
+            
             DrawerListTile(
               title: 'Daftar Cabang',
               icon: Icons.business,
@@ -63,7 +63,9 @@ class SideMenu extends StatelessWidget {
                 onPageSelected('presence');
               },
             ),
-            Divider(color: Colors.white10,),
+            Divider(
+              color: Colors.white10,
+            ),
             DrawerListTile(
               title: 'LogOut',
               icon: Icons.logout_rounded,

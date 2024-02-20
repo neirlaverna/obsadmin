@@ -1,10 +1,12 @@
-import 'package:desktopadmin/mainscreen.dart';
-import 'package:desktopadmin/menucontroller.dart';
+import 'package:desktopadmin/Main/mainscreen.dart';
+import 'package:desktopadmin/Services/menucontroller.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+// ignore: avoid_web_libraries_in_flutter
 
 class MyMultiProvider extends StatefulWidget {
-  const MyMultiProvider({Key? key});
+  const MyMultiProvider({Key? key, required this.title}) : super(key: key);
+  final String title;
 
   @override
   State<MyMultiProvider> createState() => _MyMultiProviderState();

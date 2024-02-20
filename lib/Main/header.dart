@@ -1,16 +1,50 @@
-import 'package:desktopadmin/constans.dart';
-import 'package:desktopadmin/firebase_services.dart';
-import 'package:desktopadmin/responsive.dart';
+import 'dart:async';
+
+import 'package:desktopadmin/Services/constans.dart';
+import 'package:desktopadmin/Services/firebase_services.dart';
+import 'package:desktopadmin/Services/responsive.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:desktopadmin/menucontroller.dart';
+import 'package:desktopadmin/Services/menucontroller.dart';
 
-
-class Header extends StatelessWidget {
-  const Header({
+// ignore: must_be_immutable
+class Header extends StatefulWidget {
+  final String title;
+  Header({
     Key? key,
+    required this.title,
   }) : super(key: key);
+
+  @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+  late Timer _timer;
+  late StreamController<DateTime> _clockStreamController;
+
+  @override
+  void initState() {
+    super.initState();
+    _clockStreamController = StreamController<DateTime>();
+    _updateTime();
+  }
+
+  void _updateTime() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // Trigger a rebuild every second
+      _clockStreamController.add(DateTime.now());
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _clockStreamController.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +57,64 @@ class Header extends StatelessWidget {
           ),
         if (!Responsive.isMobile(context))
           Text(
-            "Home",
+            widget.title,
             style: Theme.of(context).textTheme.titleLarge,
           ),
         if (!Responsive.isMobile(context))
           Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),
-       
+        Column(
+          children: [
+            DateNTime(clockStreamController: _clockStreamController),
+          ],
+        ),
         ProfileCard(),
       ],
+    );
+  }
+}
+
+class DateNTime extends StatelessWidget {
+  const DateNTime({
+    super.key,
+    required StreamController<DateTime> clockStreamController,
+  }) : _clockStreamController = clockStreamController;
+
+  final StreamController<DateTime> _clockStreamController;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DateTime>(
+      stream: _clockStreamController.stream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          String formattedDate =
+              DateFormat('dd/MM/yyyy').format(snapshot.data!);
+          String formattedTime =
+              DateFormat('HH:mm:ss').format(snapshot.data!);
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Text(
+                "Tanggal : $formattedDate",
+                style: const TextStyle(
+                  fontFamily: 'Kanit',
+                  fontSize: 16,
+                ),
+              ),
+              Text(
+                "Jam : ${formattedTime.padLeft(8, '0')}",
+                style: const TextStyle(
+                  fontFamily: 'Kanit',
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          );
+        } else {
+          return const Text("Loading...");
+        }
+      },
     );
   }
 }
@@ -51,11 +135,10 @@ class ProfileCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: defaultpadding, vertical: defaultpadding / 2),
       child: FutureBuilder<String?>(
-        future: FirebaseServiceAuth().getUsernameByEmail(
-            FirebaseAuth.instance.currentUser?.email ?? ""),
+        future: FirebaseServiceAuth()
+            .getUsernameByEmail(FirebaseAuth.instance.currentUser?.email ?? ""),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-           
             return CircularProgressIndicator();
           } else if (snapshot.hasError) {
             // Handle jika terjadi kesalahan
@@ -71,7 +154,8 @@ class ProfileCard extends StatelessWidget {
                 ),
                 SizedBox(width: 5),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: defaultpadding / 21),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: defaultpadding / 21),
                   child: Text(username),
                 )
               ],

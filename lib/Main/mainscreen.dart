@@ -1,24 +1,28 @@
-import 'package:desktopadmin/branchscreen.dart';
-import 'package:desktopadmin/dashboardscreen.dart';
-import 'package:desktopadmin/historyscreen.dart';
-import 'package:desktopadmin/menucontroller.dart';
-import 'package:desktopadmin/presencescreen.dart';
-import 'package:desktopadmin/registerscreen.dart';
-import 'package:desktopadmin/responsive.dart';
-import 'package:desktopadmin/sidemenu.dart';
-import 'package:desktopadmin/transaction.dart';
+
+import 'package:desktopadmin/HIstory/history_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:desktopadmin/Branch/branchscreen.dart';
+import 'package:desktopadmin/Home/dashboardscreen.dart';
+
+import 'package:desktopadmin/Services/menucontroller.dart';
+import 'package:desktopadmin/Precense/presencescreen.dart';
+import 'package:desktopadmin/Register/register_screen.dart';
+import 'package:desktopadmin/Services/responsive.dart';
+import 'package:desktopadmin/Main/sidemenu.dart';
+import 'package:desktopadmin/Daftar%20Barang/daftar_barang.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key});
+  const MainScreen({
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  String _currentPage = 'dashboard'; 
+  String _currentPage = 'dashboard';
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +33,6 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {
             _currentPage = page;
           });
-          Navigator.pop(context);
         },
       ),
       body: SafeArea(
@@ -38,7 +41,11 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             if (Responsive.isDesktop(context))
               Expanded(
-                child: SideMenu(onPageSelected: (page) {}),
+                child: SideMenu(onPageSelected: (page) {
+                  setState(() {
+                    _currentPage = page;
+                  });
+                }),
               ),
             Expanded(
               flex: 5,
@@ -54,19 +61,18 @@ class _MainScreenState extends State<MainScreen> {
     switch (_currentPage) {
       case 'dashboard':
         return DashboardScreen();
-  
-      case 'transaction':
-        return TransactionScreen(); 
+      case 'cart':
+        return ProductScreen(); 
       case 'register':
         return RegisterScreen(); 
-      case 'history':
-        return HistoryScreen();
+      case 'History':
+        return HistoryScreen(); 
       case 'branch':
         return BranchScreen(); 
-      case 'pesence':
+      case 'presence':
         return PresenceScreen(); 
       default:
-        return DashboardScreen(); 
+        return DashboardScreen();
     }
   }
 }

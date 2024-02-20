@@ -1,34 +1,62 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:desktopadmin/newtransactioncard.dart';
+import 'package:desktopadmin/Home/newtransactioncard.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'dart:js' as js;
 
-class NewTransaction extends StatelessWidget {
- final flutterLocalNotificationsPlugin;
-
+class NewTransaction extends StatefulWidget {
   const NewTransaction({
-    Key? key, required this.flutterLocalNotificationsPlugin
+    Key? key,
   }) : super(key: key);
+
+  @override
+  State<NewTransaction> createState() => _NewTransactionState();
+}
+
+class _NewTransactionState extends State<NewTransaction> {
+  late js.JsObject state;
+  String title = 'Testing';
+  bool isDataChanged = false;
+  List<String> previousData = [];
+
+  @override
+  void initState() {
+
+    state = js.JsObject.fromBrowserObject(js.context['state']);
+    state['counter'] = 0;
+
+    super.initState();
+  }
+
+  void _incrementCounter() {
+    state['title'] = "Ada pesanan baru";
+    state['body'] =  'Segera proses pesanan';
+    state['icon'] = "./icons/Icon-192.png";
+
+    js.context.callMethod('showNotification');
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(15.0),
+      padding: const EdgeInsets.only(top: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Transaksi Perlu diproses',
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(
             height: 20,
           ),
           Container(
-            padding: EdgeInsets.all(8),
-            height: 500,
+            padding: EdgeInsets.all(5),
+            height: 450,
             decoration: BoxDecoration(
-              border: Border.symmetric(vertical: BorderSide(color: Colors.grey)),
+              border:
+                  Border.symmetric(vertical: BorderSide(color: Colors.grey)),
               borderRadius: BorderRadius.circular(8),
             ),
             child: StreamBuilder<QuerySnapshot>(
@@ -37,7 +65,6 @@ class NewTransaction extends StatelessWidget {
                   .orderBy('status')
                   .orderBy('Tanggal', descending: true)
                   .orderBy('jam', descending: true)
-                  .where('status', isNotEqualTo: 'Selesai!')
                   .snapshots(),
               builder: (BuildContext context,
                   AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -54,22 +81,45 @@ class NewTransaction extends StatelessWidget {
                 }
 
                 var transactions = snapshot.data!.docs;
+                var filteredTransactions = transactions
+                    .where((doc) => doc['status'] != 'Selesai!')
+                    .where((doc) => doc['Produk'] != 'Bongkaran') 
+                    .toList();
 
-                if (transactions.isEmpty) {
+                if (filteredTransactions.isEmpty) {
                   return const Center(
                     child: Text('Data kosong.'),
                   );
                 }
-                showNotification();
+                Future.microtask(() {
+                  var currentData = transactions.map((doc) => doc.id).toList();
+
+                  if (!listEquals(previousData, currentData)) {
+                    for (int i = 0; i < currentData.length; i++) {
+                      var document = transactions
+                          .firstWhere((doc) => doc.id == currentData[i]);
+
+                      if (!previousData.contains(currentData[i]) &&
+                          document['status'] == 'Belum diproses') {
+                        _incrementCounter();
+                    
+                        break;
+                      }
+                    }
+
+                    previousData = List<String>.from(currentData);
+                  } else {}
+                });
 
                 return ListView.builder(
                   shrinkWrap: true,
                   scrollDirection: Axis.vertical,
-                  itemCount: transactions.length,
+                  itemCount: filteredTransactions.length,
                   itemBuilder: (BuildContext context, int index) {
-                    var document = transactions[index];
+                    var document = filteredTransactions[index];
                     Map<String, dynamic> data =
                         document.data() as Map<String, dynamic>;
+                        
 
                     return NewTransactionsCard(
                       branch: data['Cabang'] ?? 'N/A',
@@ -95,26 +145,6 @@ class NewTransaction extends StatelessWidget {
     );
   }
 
-    Future<void> showNotification() async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'your channel id',
-      'your channel name',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'New Transaction',
-      'There is a new transaction that needs attention!',
-      platformChannelSpecifics,
-      payload: 'item x',
-    );
-  }
-}
-
   String formatVariasi(dynamic variasi) {
     if (variasi is int) {
       if (variasi >= 1000) {
@@ -130,4 +160,4 @@ class NewTransaction extends StatelessWidget {
       return 'N/A';
     }
   }
-
+}
